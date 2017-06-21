@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
@@ -27,6 +28,8 @@ public class SmsActivity extends AppCompatActivity implements View.OnClickListen
     Button btn_envoyer;
     EditText edt_message;
     String numero;
+    String type;
+    int age;
     RadioButton rb1;
     RadioButton rb2;
     RadioButton rb3;
@@ -37,12 +40,6 @@ public class SmsActivity extends AppCompatActivity implements View.OnClickListen
     public static SmsActivity instance()
     {
         return inst;
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        inst = this;
     }
 
     @Override
@@ -65,22 +62,60 @@ public class SmsActivity extends AppCompatActivity implements View.OnClickListen
         btn_envoyer.setOnClickListener(this);
         numero = getIntent().getStringExtra("numero");
         tab_msg = getSMSDetails(numero);
-        customerAdapter = new CustomerAdapter();
 
-        smsListView.setAdapter(customerAdapter);
-        smsListView.setSelection(customerAdapter.getCount()-1);
+
+            type = getIntent().getStringExtra("type");
+            age = getIntent().getIntExtra("age",-1);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        inst = this;
+
+        if(tab_msg.size()>0)
+        {
+            customerAdapter = new CustomerAdapter();
+            smsListView.setAdapter(customerAdapter);
+            smsListView.setSelection(customerAdapter.getCount() - 1);
+        }
+
+        try
+        {
+            if(type.equals("anniversaire"))
+            {
+                rb1.setText("Je te souhaite un joyeux anniversaire pour tes "+age+" ans");
+                rb2.setVisibility(View.INVISIBLE);
+                rb3.setVisibility(View.INVISIBLE);
+            }
+        }
+        catch (NullPointerException e)
+        {
+            e.printStackTrace();
+        }
 
     }
 
     //Requête pour obtenir la liste des sms d'un numero
     private ArrayList<Sms> getSMSDetails(String numero)
     {
+        Log.e("numero entré",numero);
+        String numero2 = numero.replace(" ","");
+
         Uri uri = Uri.parse("content://sms");
         ArrayList<Sms> msg_recup = new ArrayList<Sms>();
-        String[] arg = {"%"+numero};
 
 
-        Cursor cursor = getContentResolver().query(uri, null, "address LIKE ?",arg, "date ASC");
+        //String[] arg = {"%"+ numero.substring(3) + "%"};
+        //String[] arg2 = {"%" + numero2.substring(3) + "%"};
+
+
+        numero = "%"+numero.substring(3)+"%";
+        numero2 ="%"+numero2.substring(2)+"%";
+
+        Log.e("les numeros ->", numero +" et " + numero2);
+
+        Cursor cursor = getContentResolver().query(uri, null, "address LIKE '" + numero + "' OR address LIKE '" + numero2+ "'", null, "date ASC");
 
         if(cursor.moveToFirst())
         {
@@ -117,28 +152,34 @@ public class SmsActivity extends AppCompatActivity implements View.OnClickListen
         if(v.getId() == btn_envoyer.getId())
         {
             sendSMS(numero);
+            onStart();
         }
     }
 
-    class CustomerAdapter extends BaseAdapter {
+    class CustomerAdapter extends BaseAdapter
+    {
 
         @Override
-        public int getCount() {
+        public int getCount()
+        {
             return tab_msg.size();
         }
 
         @Override
-        public Object getItem(int position) {
+        public Object getItem(int position)
+        {
             return null;
         }
 
         @Override
-        public long getItemId(int position) {
+        public long getItemId(int position)
+        {
             return 0;
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
 
             if(tab_msg.get(position).getType().equals("reçu"))
             {

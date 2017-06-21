@@ -14,7 +14,7 @@
     <ListView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/liste_element">
+        android:id="@+id/liste_contacts">
 
     </ListView>
 

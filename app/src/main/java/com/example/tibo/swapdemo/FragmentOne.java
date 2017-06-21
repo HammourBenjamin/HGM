@@ -24,14 +24,16 @@ import java.util.ArrayList;
 
 public class FragmentOne extends Fragment implements AdapterView.OnItemClickListener{
 
+    ListContacts listContacts;
+
     ListView listConversation;
-    ArrayList<String> listeNumContactes;
     ArrayList<Sms> listeLastSms;
     Context applicationContext;
 
     @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-
+    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState)
+    {
+        Log.e("Fragment onCreateView ","1");
         View rootView = inflater.inflate(R.layout.fragment_one_layout,container, false);
         listConversation = (ListView)rootView.findViewById(R.id.list_conversation);
 
@@ -45,19 +47,21 @@ public class FragmentOne extends Fragment implements AdapterView.OnItemClickList
     {
         super.onCreate(savedInstanceState);
         applicationContext = MainActivity.getContextOfApplication();
+        Log.e("onCreate ","1");
     }
 
     public void initialisation()
     {
-
-        listeNumContactes = new ArrayList<String>();
-        listeNumContactes.add("650167644");
-        listeNumContactes.add("606550909");
+        listContacts = MainActivity.getListContacts();
 
         listeLastSms = new ArrayList<Sms>();
-        for(int i=0;i<listeNumContactes.size();i++)
+
+        if(listContacts.getListContacts().size()>0)
         {
-            listeLastSms.add(getLastSMS(listeNumContactes.get(i)));
+            for(int i=0;i<listContacts.getListContacts().size();i++)
+            {
+                listeLastSms.add(getLastSMS(listContacts.getListContacts().get(i).getNumber()));
+            }
         }
 
         CustomerAdapter customerAdapter = new CustomerAdapter();
@@ -70,17 +74,14 @@ public class FragmentOne extends Fragment implements AdapterView.OnItemClickList
     @Override
     public void onStart()
     {
-        Log.e("onStart","Debut ok");
-
+        Log.e("onStart","1");
         super.onStart();
-
-        Log.e("onStart","Fin ok");
     }
 
     @Override
     public void onItemClick(AdapterView<?> parent, View view, int position, long id)
     {
-        String numero = listeNumContactes.get(position).toString();
+        String numero = listContacts.getListContacts().get(position).getNumber();
         Intent intentSmsActivity = new Intent(applicationContext,SmsActivity.class);
         intentSmsActivity.putExtra("numero",numero);
         startActivity(intentSmsActivity);
@@ -90,6 +91,16 @@ public class FragmentOne extends Fragment implements AdapterView.OnItemClickList
     {
         Uri uri = Uri.parse("content://sms");
         Sms msg_recup = null;
+
+        if(numero.charAt(0)=='+')
+        {
+            numero = numero.toString().substring(3,numero.length());
+        }
+        else
+        {
+            numero = numero.toString().substring(1,numero.length());
+        }
+
         String[] arg = {"%"+numero};
 
 
@@ -112,8 +123,12 @@ public class FragmentOne extends Fragment implements AdapterView.OnItemClickList
 
             msg_recup = new Sms(body, date, SMStype);
         }
-        cursor.close();
+        else
+        {
+            msg_recup = new Sms(null, null, null);
+        }
 
+        cursor.close();
         return msg_recup;
     }
 
@@ -121,34 +136,42 @@ public class FragmentOne extends Fragment implements AdapterView.OnItemClickList
     {
 
         @Override
-        public int getCount() {
-            return listeNumContactes.size();
+        public int getCount()
+        {
+            return listContacts.getListContacts().size();
         }
 
         @Override
-        public Object getItem(int position) {
+        public Object getItem(int position)
+        {
             return null;
         }
 
         @Override
-        public long getItemId(int position) {
+        public long getItemId(int position)
+        {
             return 0;
         }
 
         @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
+        public View getView(int position, View convertView, ViewGroup parent)
+        {
 
             convertView = getActivity().getLayoutInflater().inflate(R.layout.item_liste_conversation,null);
-            TextView num = (TextView)convertView.findViewById(R.id.lbl_numero);
+            TextView num = (TextView)convertView.findViewById(R.id.lbl_name);
             TextView sms = (TextView)convertView.findViewById(R.id.lbl_lastMessage);
 
-            num.setText(listeNumContactes.get(position));
-            Log.e("Body",listeLastSms.get(position).getBody());
-            sms.setText(listeLastSms.get(position).getBody());
+            num.setText(listContacts.getListContacts().get(position).getName());
+            if(listeLastSms.get(position).getBody() != null)
+            {
+                sms.setText(listeLastSms.get(position).getBody());
+            }
+            else
+            {
+                sms.setText("Aucune conversation");
+            }
 
             return convertView;
         }
     }
-
-
 }

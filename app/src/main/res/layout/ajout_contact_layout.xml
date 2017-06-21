@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.example.tibo.swapdemo.AjouterContact">
+    tools:context="com.example.tibo.swapdemo.AjouterContactActivity">
 
     <LinearLayout
         android:layout_width="match_parent"

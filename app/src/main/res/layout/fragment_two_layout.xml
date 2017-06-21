@@ -3,11 +3,18 @@
     android:layout_width="match_parent" android:layout_height="match_parent">
 
     <TextView
+        android:id="@+id/texte_no_notifications"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Pas encore de notifications"
         android:textSize="25dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="50dp"/>
+
+    <ListView
+        android:id="@+id/liste_notifications"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </ListView>
 
 </RelativeLayout>
